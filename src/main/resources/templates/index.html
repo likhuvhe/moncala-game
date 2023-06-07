@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Mancala Game</title>
+</head>
+<body>
+<h1>Mancala Game</h1>
+
+
+ <form th:action="@{/game/create}" method="post">
+<button type="submit" onclick="createGame()">Create Game</button>
+</form> 
+
+    <script>
+        function createGame() {
+            fetch('/game/create', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const gameId = data.id;
+                    window.location.href = '/game/' + gameId;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mancala Game</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/game.css}">
+    <script th:src="@{/js/game.js}"></script>
+</head>
+<body>
+<h1>Mancala Game</h1>
+
+<div class="game-board">
+    <div class="player">
+        <h4>Player 1</h4>
+        <div class="pit" th:each="stone, idx : ${game.player1.pits}">
+            <button class="pit-button" th:text="${stone}" th:onclick="'makeMove(' + ${game.id} + ', ' + ${idx.index} + ')'" ></button>
+        </div>
+        <p class="big-pit" th:text="${game.player1.bigPit}"></p>
+    </div>
+
+    <div class="player">
+        <h4>Player 2</h4>
+        <div class="pit" th:each="stone, idx : ${game.player2.pits}">
+            <button class="pit-button" th:text="${stone}" th:onclick="'makeMove(' + ${game.id} + ', ' + ${idx.index} + ')'" ></button>
+        </div>
+        <p class="big-pit" th:text="${game.player2.bigPit}"></p>
+    </div>
+</div>
+
+<p>Current Player: <span id="currentPlayer"></span></p>
+<p>Winner: <span id="winner"></span></p>
+
+<button onclick="createNewGame()">New Game</button>
+
+<script>
+    const currentPlayer = currentPlayer.id;
+
+    function makeMove(gameId, pitIndex) {
+        fetch(`/game/move/${gameId}/${pitIndex}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(updatedGame => updateBoard(updatedGame));
+    }
+
+
+    function updateBoard(updatedGame) {
+    const player1Pits = document.querySelectorAll('.player:nth-child(1) .pit-button');
+    const player2Pits = document.querySelectorAll('.player:nth-child(2) .pit-button');
+    const player1BigPit = document.querySelector('.player:nth-child(1) .big-pit');
+    const player2BigPit = document.querySelector('.player:nth-child(2) .big-pit');
+    const currentPlayerDisplay = document.getElementById('currentPlayer');
+
+    for (let i = 0; i < player1Pits.length; i++) {
+        player1Pits[i].innerText = updatedGame.player1.pits[i];
+        player2Pits[i].innerText = updatedGame.player2.pits[i];
+
+    
+        if (updatedGame.currentPlayer.id === 'Player 1') {
+            player1Pits[i].disabled = false;
+            player2Pits[i].disabled = true;
+        } else {
+            player1Pits[i].disabled = true;
+            player2Pits[i].disabled = false;
+        }
+    }
+
+    player1BigPit.innerText = updatedGame.player1.bigPit;
+    player2BigPit.innerText = updatedGame.player2.bigPit;
+
+    currentPlayerDisplay.innerText = updatedGame.currentPlayer.id;
+
+    if (updatedGame.winner) {
+        document.getElementById('winner').innerText = updatedGame.winner;
+    } else {
+        document.getElementById('winner').innerText = '';
+    }
+}
+
+function createNewGame() {
+        fetch('/game/create', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                const gameId = data.id;
+                window.location.href = '/game/' + gameId;
+            })
+            .catch(error => console.error('Error:', error));
+}
+</script>
+</body>
+</html>
